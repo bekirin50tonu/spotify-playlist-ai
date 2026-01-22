@@ -268,7 +268,8 @@ class SpotifyService {
         prompt.prompt,
         prompt.mood,
         prompt.energy,
-        userProfile
+        userProfile,
+        prompt.trackCount
       );
 
       console.log('🎵 Gemini önerileri:', songSuggestions);

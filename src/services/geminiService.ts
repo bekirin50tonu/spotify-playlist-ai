@@ -7,7 +7,7 @@ class GeminiService {
     this.genAI = new GoogleGenerativeAI(apiKey);
   }
 
-  async generatePlaylistSuggestions(prompt: string, mood?: string, energy?: string): Promise<string[]> {
+  async generatePlaylistSuggestions(prompt: string, mood?: string, energy?: string, count = 20): Promise<string[]> {
     if (!this.genAI) {
       throw new Error('Gemini API key bulunamadı. Ayarlardan API key ekleyin.');
     }
@@ -21,7 +21,7 @@ KURALLAR:
 1. Sadece şarkı adı ve sanatçı adı ver
 2. Her satırda bir şarkı olsun
 3. Format: "Şarkı Adı - Sanatçı Adı"
-4. Maksimum 20 şarkı öner
+4. Maksimum ${count} şarkı öner
 5. Türkçe ve İngilizce şarkılar karışık olabilir
 6. Popüler ve tanınmış şarkıları tercih et
 
@@ -65,7 +65,8 @@ ${energy ? `Enerji seviyesi: ${energy}` : ''}
         energyPreference: string;
         diversityScore: number;
       };
-    }
+    },
+    count: number = 20
   ): Promise<string[]> {
     if (!this.genAI) {
       throw new Error('Gemini API key bulunamadı. Ayarlardan API key ekleyin.');
@@ -102,7 +103,7 @@ KURALLAR:
 2. Sadece şarkı adı ve sanatçı adı ver
 3. Her satırda bir şarkı olsun
 4. Format: "Şarkı Adı - Sanatçı Adı"
-5. Maksimum 20 şarkı öner
+5. Maksimum ${count} şarkı öner
 6. Kullanıcının dinlediği sanatçılara benzer sanatçılar öner
 7. Kullanıcının favori türlerinden şarkılar seç
 8. Popüler ve tanınmış şarkıları tercih et

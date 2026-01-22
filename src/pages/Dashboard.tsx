@@ -264,8 +264,8 @@ const Dashboard: React.FC = () => {
                   musicProfile.musicAnalysis.diversityScore > 0.7
                     ? 'bg-green-900 bg-opacity-30 text-green-400'
                     : musicProfile.musicAnalysis.diversityScore > 0.4
-                    ? 'bg-yellow-900 bg-opacity-30 text-yellow-400'
-                    : 'bg-red-900 bg-opacity-30 text-red-400'
+                      ? 'bg-yellow-900 bg-opacity-30 text-yellow-400'
+                      : 'bg-red-900 bg-opacity-30 text-red-400'
                 }`}
               >
                 <span>🎯</span>
@@ -274,8 +274,8 @@ const Dashboard: React.FC = () => {
                   {musicProfile.musicAnalysis.diversityScore > 0.7
                     ? 'Yüksek'
                     : musicProfile.musicAnalysis.diversityScore > 0.4
-                    ? 'Orta'
-                    : 'Düşük'}
+                      ? 'Orta'
+                      : 'Düşük'}
                 </span>
               </div>
             </div>
