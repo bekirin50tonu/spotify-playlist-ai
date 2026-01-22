@@ -27,7 +27,7 @@ const Layout: React.FC = () => {
                   <span className="text-white">{user.display_name}</span>
                 </div>
                 <Link
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors"
                   to="/settings"
                 >
                   ⚙️ Ayarlar
