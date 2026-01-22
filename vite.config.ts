@@ -5,7 +5,6 @@ import { VitePWA } from 'vite-plugin-pwa'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    base: '/spotify-playlist-ai/',
     react(),
     VitePWA({
       registerType: 'autoUpdate',
