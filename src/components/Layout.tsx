@@ -1,5 +1,5 @@
 import React from 'react'
-import { Outlet } from 'react-router-dom'
+import { Link, Outlet } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 
 const Layout: React.FC = () => {
@@ -26,12 +26,12 @@ const Layout: React.FC = () => {
                   )}
                   <span className="text-white">{user.display_name}</span>
                 </div>
-                <button
-                  onClick={() => (window.location.href = '/settings')}
+                <Link
                   className="text-gray-400 hover:text-white transition-colors"
+                  to="/settings"
                 >
                   ⚙️ Ayarlar
-                </button>
+                </Link>
                 <button
                   onClick={logout}
                   className="text-gray-400 hover:text-white transition-colors"
