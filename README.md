@@ -4,7 +4,7 @@ AI destekli Spotify çalma listesi oluşturucu. Verdiğiniz açıklamaya göre k
 
 ## 🌐 Canlı Demo
 
-**[https://bekiryazgann.github.io/spotify-playlist-ai/](https://bekiryazgann.github.io/spotify-playlist-ai/)**
+**[https://bekirin50tonu.github.io/spotify-playlist-ai/](https://bekirin50tonu.github.io/spotify-playlist-ai/)**
 
 ## Özellikler
 
@@ -57,7 +57,7 @@ pnpm dev
 2. Yeni bir app oluşturun
 3. Redirect URI olarak şunları ekleyin:
    - `http://localhost:5173/callback` (development)
-   - `https://bekiryazgann.github.io/spotify-playlist-ai/callback` (production)
+   - `https://bekirin50tonu.github.io/spotify-playlist-ai/callback` (production)
 4. Client ID'yi `.env` dosyasına ekleyin
 
 ## Gemini API Kurulumu
@@ -107,7 +107,7 @@ MIT
 - Mevcut uygulamanızı düzenleyin
 - **Redirect URIs** kısmına şunu ekleyin:
   ```
-  https://bekiryazgann.github.io/spotify-playlist-ai/callback
+  https://bekirin50tonu.github.io/spotify-playlist-ai/callback
   ```
 
 ### 2. 📁 GitHub Repository Oluşturun
@@ -118,7 +118,7 @@ git init
 git add .
 git commit -m "Initial commit: Spotify Playlist AI"
 git branch -M main
-git remote add origin https://github.com/bekiryazgann/spotify-playlist-ai.git
+git remote add origin https://github.com/bekirin50tonu/spotify-playlist-ai.git
 git push -u origin main
 ```
 
@@ -150,4 +150,4 @@ git push origin main
 
 ## 🌐 Erişim URL'si:
 
-**https://bekiryazgann.github.io/spotify-playlist-ai/**
+**https://bekirin50tonu.github.io/spotify-playlist-ai/**
