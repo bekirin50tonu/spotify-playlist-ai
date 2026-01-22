@@ -21,7 +21,7 @@ KURALLAR:
 1. Sadece şarkı adı ve sanatçı adı ver
 2. Her satırda bir şarkı olsun
 3. Format: "Şarkı Adı - Sanatçı Adı"
-4. Maksimum ${count} şarkı öner
+4. Tam olarak ${count} şarkı öner
 5. Türkçe ve İngilizce şarkılar karışık olabilir
 6. Popüler ve tanınmış şarkıları tercih et
 
@@ -29,7 +29,7 @@ Kullanıcı isteği: ${prompt}
 ${mood ? `Ruh hali: ${mood}` : ''}
 ${energy ? `Enerji seviyesi: ${energy}` : ''}
 
-Şarkı önerilerini listele:`;
+${count} adet şarkı önerisi listele:`;
 
     try {
       const result = await model.generateContent(systemPrompt);
@@ -42,7 +42,7 @@ ${energy ? `Enerji seviyesi: ${energy}` : ''}
         .map(line => line.trim())
         .filter(line => line && line.includes('-'))
         .map(line => line.replace(/^\d+\.\s*/, '')) // Numaraları kaldır
-        .slice(0, 20); // Maksimum 20 şarkı
+        .slice(0, count); // Kullanıcının istediği sayı kadar
 
       return songs;
     } catch (error) {
@@ -103,7 +103,7 @@ KURALLAR:
 2. Sadece şarkı adı ve sanatçı adı ver
 3. Her satırda bir şarkı olsun
 4. Format: "Şarkı Adı - Sanatçı Adı"
-5. Maksimum ${count} şarkı öner
+5. Tam olarak ${count} şarkı öner
 6. Kullanıcının dinlediği sanatçılara benzer sanatçılar öner
 7. Kullanıcının favori türlerinden şarkılar seç
 8. Popüler ve tanınmış şarkıları tercih et
@@ -113,7 +113,7 @@ Kullanıcı isteği: ${prompt}
 ${mood ? `İstenen ruh hali: ${mood}` : ''}
 ${energy ? `İstenen enerji seviyesi: ${energy}` : ''}
 
-Kullanıcının müzik zevkine uygun kişiselleştirilmiş şarkı önerilerini listele:`;
+Kullanıcının müzik zevkine uygun ${count} adet kişiselleştirilmiş şarkı önerisi listele:`;
 
     try {
       const result = await model.generateContent(systemPrompt);
@@ -126,7 +126,7 @@ Kullanıcının müzik zevkine uygun kişiselleştirilmiş şarkı önerilerini 
         .map(line => line.trim())
         .filter(line => line && line.includes('-'))
         .map(line => line.replace(/^\d+\.\s*/, '')) // Numaraları kaldır
-        .slice(0, 20); // Maksimum 20 şarkı
+        .slice(0, count); // Kullanıcının istediği sayı kadar
 
       return songs;
     } catch (error) {
