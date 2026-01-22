@@ -45,7 +45,7 @@ function App() {
   }, [accessToken, user])
 
   return (
-    <Router>
+    <Router basename="/spotify-playlist-ai">
       <Routes>
         <Route path="/callback" element={<Callback />} />
 
