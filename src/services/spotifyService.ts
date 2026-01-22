@@ -4,17 +4,89 @@ import { generateCodeVerifier, generateCodeChallenge } from '../utils/pkce';
 
 class SpotifyService {
   private api: SpotifyApi | null = null;
+  private currentRefreshToken: string | null = null;
 
-  initialize(accessToken: string) {
+  initialize(accessToken: string, refreshToken?: string) {
+    this.currentRefreshToken = refreshToken || null;
+
     this.api = SpotifyApi.withAccessToken(
       import.meta.env.VITE_SPOTIFY_CLIENT_ID,
       {
         access_token: accessToken,
         token_type: 'Bearer',
         expires_in: 3600,
-        refresh_token: '',
+        refresh_token: refreshToken || '',
       }
     );
+  }
+
+  async refreshAccessToken(): Promise<{ access_token: string; refresh_token?: string }> {
+    if (!this.currentRefreshToken) {
+      throw new Error('Refresh token bulunamadı. Yeniden giriş yapın.');
+    }
+
+    console.log('🔄 Refreshing access token...');
+
+    const response = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: this.currentRefreshToken,
+        client_id: import.meta.env.VITE_SPOTIFY_CLIENT_ID,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Token refresh error:', errorData);
+      throw new Error(`Token yenileme hatası: ${errorData.error_description || errorData.error}`);
+    }
+
+    const tokens = await response.json();
+
+    // Yeni token'ları güncelle
+    if (tokens.refresh_token) {
+      this.currentRefreshToken = tokens.refresh_token;
+    }
+
+    // Store'u güncelle
+    const { useAuthStore } = await import('../stores/authStore');
+    useAuthStore.getState().setTokens(tokens.access_token, tokens.refresh_token || this.currentRefreshToken);
+
+    // API'yi yeni token ile yeniden initialize et
+    this.initialize(tokens.access_token, tokens.refresh_token || this.currentRefreshToken);
+
+    console.log('✅ Access token refreshed successfully');
+    return tokens;
+  }
+
+  async makeAuthenticatedRequest<T>(requestFn: () => Promise<T>): Promise<T> {
+    try {
+      return await requestFn();
+    } catch (error: any) {
+      // 401 Unauthorized hatası kontrolü
+      if (error?.status === 401 || error?.message?.includes('401') || error?.message?.includes('Unauthorized')) {
+        console.log('🔄 Access token expired, refreshing...');
+
+        try {
+          await this.refreshAccessToken();
+          // Token yenilendikten sonra isteği tekrar dene
+          return await requestFn();
+        } catch (refreshError) {
+          console.error('❌ Token refresh failed:', refreshError);
+          // Refresh token da geçersizse logout yap
+          const { useAuthStore } = await import('../stores/authStore');
+          useAuthStore.getState().logout();
+          throw new Error('Oturum süresi doldu. Lütfen yeniden giriş yapın.');
+        }
+      }
+
+      // Diğer hatalar için orijinal hatayı fırlat
+      throw error;
+    }
   }
 
   async getAuthUrl(): Promise<string> {
@@ -85,8 +157,8 @@ class SpotifyService {
   async getCurrentUser(): Promise<User> {
     if (!this.api) throw new Error('Spotify API not initialized');
 
-    try {
-      const profile = await this.api.currentUser.profile();
+    return this.makeAuthenticatedRequest(async () => {
+      const profile = await this.api!.currentUser.profile();
       return {
         id: profile.id,
         display_name: profile.display_name || '',
@@ -94,9 +166,7 @@ class SpotifyService {
         images: profile.images || [],
         followers: profile.followers,
       };
-    } catch (error) {
-      throw new Error('Failed to get current user');
-    }
+    });
   }
 
   async getUserMusicProfile(): Promise<{
@@ -112,19 +182,19 @@ class SpotifyService {
   }> {
     if (!this.api) throw new Error('Spotify API not initialized');
 
-    try {
+    return this.makeAuthenticatedRequest(async () => {
       console.log('🔍 Analyzing user music profile...');
 
       // Son 1 ay içindeki en çok dinlenen sanatçılar
-      const topArtistsShort = await this.api.currentUser.topItems('artists', 'short_term', 20);
-      const topArtistsMedium = await this.api.currentUser.topItems('artists', 'medium_term', 20);
+      const topArtistsShort = await this.api!.currentUser.topItems('artists', 'short_term', 20);
+      const topArtistsMedium = await this.api!.currentUser.topItems('artists', 'medium_term', 20);
 
       // Son 1 ay içindeki en çok dinlenen şarkılar
-      const topTracksShort = await this.api.currentUser.topItems('tracks', 'short_term', 20);
-      const topTracksMedium = await this.api.currentUser.topItems('tracks', 'medium_term', 20);
+      const topTracksShort = await this.api!.currentUser.topItems('tracks', 'short_term', 20);
+      const topTracksMedium = await this.api!.currentUser.topItems('tracks', 'medium_term', 20);
 
       // Son dinlenen şarkılar
-      const recentTracks = await this.api.player.getRecentlyPlayedTracks(50);
+      const recentTracks = await this.api!.player.getRecentlyPlayedTracks(50);
 
       // Sanatçı verilerini işle
       const topArtists = [...topArtistsShort.items, ...topArtistsMedium.items]
@@ -159,21 +229,7 @@ class SpotifyService {
         recentTracks: recentTracksData,
         musicAnalysis,
       };
-    } catch (error) {
-      console.error('Failed to get user music profile:', error);
-      // Hata durumunda boş analiz döndür
-      return {
-        topArtists: [],
-        topTracks: [],
-        recentTracks: [],
-        musicAnalysis: {
-          favoriteGenres: [],
-          listeningHabits: 'Analiz edilemedi',
-          energyPreference: 'Bilinmiyor',
-          diversityScore: 0,
-        },
-      };
-    }
+    });
   }
 
   private analyzeMusicProfile(
@@ -302,7 +358,9 @@ class SpotifyService {
           const searchQuery = `track:"${songName}" artist:"${artistName}"`;
           console.log('🔍 Searching:', searchQuery);
 
-          const searchResults = await this.api.search(searchQuery, ['track'], 'TR', 1);
+          const searchResults = await this.makeAuthenticatedRequest(async () => {
+            return await this.api!.search(searchQuery, ['track'], 'TR', 1);
+          });
 
           if (searchResults.tracks.items.length > 0) {
             const track = searchResults.tracks.items[0];
@@ -349,8 +407,8 @@ class SpotifyService {
   async createPlaylist(playlist: Playlist, userId: string): Promise<string> {
     if (!this.api) throw new Error('Spotify API not initialized');
 
-    try {
-      const createdPlaylist = await this.api.playlists.createPlaylist(userId, {
+    return this.makeAuthenticatedRequest(async () => {
+      const createdPlaylist = await this.api!.playlists.createPlaylist(userId, {
         name: playlist.name,
         description: playlist.description,
         public: playlist.public,
@@ -359,13 +417,11 @@ class SpotifyService {
       const trackUris = playlist.tracks.map(track => `spotify:track:${track.id}`);
 
       if (trackUris.length > 0) {
-        await this.api.playlists.addItemsToPlaylist(createdPlaylist.id, trackUris);
+        await this.api!.playlists.addItemsToPlaylist(createdPlaylist.id, trackUris);
       }
 
       return createdPlaylist.id;
-    } catch (error) {
-      throw new Error('Failed to create playlist');
-    }
+    });
   }
 }
 

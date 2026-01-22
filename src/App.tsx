@@ -25,7 +25,8 @@ function App() {
     if (accessToken) {
       // Initialize Spotify service whenever we have a token
       console.log('🔧 Initializing Spotify API with token')
-      spotifyService.initialize(accessToken)
+      const { refreshToken } = useAuthStore.getState()
+      spotifyService.initialize(accessToken, refreshToken || undefined)
 
       // If we don't have user data, fetch it
       if (!user) {

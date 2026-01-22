@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://bekirin50tonu.github.io/spotify-playlist-ai/sitemap.xml

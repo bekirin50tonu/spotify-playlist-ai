@@ -24,9 +24,9 @@ const Dashboard: React.FC = () => {
 
     setIsLoadingProfile(true)
     try {
-      const { accessToken } = useAuthStore.getState()
+      const { accessToken, refreshToken } = useAuthStore.getState()
       if (accessToken) {
-        spotifyService.initialize(accessToken)
+        spotifyService.initialize(accessToken, refreshToken || undefined)
         const profile = await spotifyService.getUserMusicProfile()
         setMusicProfile(profile)
         console.log('🎵 User music profile loaded:', profile)
@@ -61,10 +61,10 @@ const Dashboard: React.FC = () => {
 
     try {
       // Ensure Spotify API is initialized
-      const { accessToken } = useAuthStore.getState()
+      const { accessToken, refreshToken } = useAuthStore.getState()
       if (accessToken) {
         console.log('🔧 Re-initializing Spotify API')
-        spotifyService.initialize(accessToken)
+        spotifyService.initialize(accessToken, refreshToken || undefined)
       }
 
       const playlistPrompt: PlaylistPrompt = {

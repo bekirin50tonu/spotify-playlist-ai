@@ -5,13 +5,47 @@ import { useAuthStore } from '../stores/authStore'
 const Layout: React.FC = () => {
   const { user, logout } = useAuthStore()
 
+  // Structured Data for SEO
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'Spotify Playlist AI',
+    description: 'AI ile kişiselleştirilmiş Spotify çalma listeleri oluşturun',
+    url: 'https://bekirin50tonu.github.io/spotify-playlist-ai/',
+    applicationCategory: 'MusicApplication',
+    operatingSystem: 'Web Browser',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+    author: {
+      '@type': 'Person',
+      name: 'Bekir Yazgan',
+    },
+    featureList: [
+      'AI destekli çalma listesi oluşturma',
+      'Kişiselleştirilmiş müzik önerileri',
+      'Spotify entegrasyonu',
+      'Müzik profili analizi',
+    ],
+  }
+
   return (
     <div className="min-h-screen bg-black">
+      {/* Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+
       <header className="bg-gray-900 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-green-500">Playlist AI</h1>
+              <h1 className="text-2xl font-bold text-green-500">
+                🎵 Playlist AI
+              </h1>
             </div>
 
             {user && (

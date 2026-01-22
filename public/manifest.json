@@ -1,24 +1,46 @@
 {
-  "name": "Spotify Playlist AI",
-  "short_name": "PlaylistAI",
-  "description": "AI-powered Spotify playlist generator",
-  "start_url": "/",
+  "name": "Spotify Playlist AI - AI Destekli Çalma Listesi Oluşturucu",
+  "short_name": "Playlist AI",
+  "description": "AI ile kişiselleştirilmiş Spotify çalma listeleri oluşturun. Müzik zevkinizi analiz ederek size özel öneriler sunar.",
+  "start_url": "/spotify-playlist-ai/",
   "display": "standalone",
   "background_color": "#191414",
   "theme_color": "#1DB954",
   "orientation": "portrait-primary",
+  "categories": ["music", "entertainment", "productivity"],
+  "lang": "tr",
   "icons": [
     {
-      "src": "/pwa-192x192.png",
+      "src": "/spotify-playlist-ai/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/spotify-playlist-ai/pwa-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/pwa-512x512.png",
+      "src": "/spotify-playlist-ai/pwa-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/spotify-playlist-ai/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/spotify-playlist-ai/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
     }
   ]
 }
