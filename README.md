@@ -22,7 +22,7 @@ AI destekli Spotify çalma listesi oluşturucu. Verdiğiniz açıklamaya göre k
 1. Projeyi klonlayın:
 
 ```bash
-git clone https://github.com/bekiryazgann/spotify-playlist-ai.git
+git clone https://github.com/bekirin50tonu/spotify-playlist-ai.git
 cd spotify-playlist-ai
 ```
 
