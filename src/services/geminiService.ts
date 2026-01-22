@@ -13,7 +13,7 @@ class GeminiService {
     }
 
     // Gemini 2.0 Flash modelini kullan
-    const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+    const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const systemPrompt = `Sen bir müzik uzmanısın. Kullanıcının verdiği açıklamaya göre şarkı önerileri yapacaksın.
 
