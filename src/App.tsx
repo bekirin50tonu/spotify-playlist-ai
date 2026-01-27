@@ -40,8 +40,8 @@ function App() {
             '❌ Failed to get user data, token might be expired:',
             error,
           )
-          // Token is invalid, logout user
-          useAuthStore.getState().logout()
+          // Token refresh mekanizması zaten spotifyService.getCurrentUser() içinde çalışıyor
+          // Eğer refresh de başarısız olursa, otomatik logout yapılacak
         })
     }
   }, [accessToken]) // Remove user dependency to always check token

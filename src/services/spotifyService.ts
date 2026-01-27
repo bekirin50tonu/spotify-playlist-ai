@@ -21,7 +21,15 @@ class SpotifyService {
   }
 
   async refreshAccessToken(): Promise<{ access_token: string; refresh_token?: string }> {
-    if (!this.currentRefreshToken) {
+    // Refresh token'ı önce mevcut değişkenden, sonra store'dan al
+    let refreshToken = this.currentRefreshToken;
+
+    if (!refreshToken) {
+      const { useAuthStore } = await import('../stores/authStore');
+      refreshToken = useAuthStore.getState().refreshToken;
+    }
+
+    if (!refreshToken) {
       throw new Error('Refresh token bulunamadı. Yeniden giriş yapın.');
     }
 
@@ -34,7 +42,7 @@ class SpotifyService {
       },
       body: new URLSearchParams({
         grant_type: 'refresh_token',
-        refresh_token: this.currentRefreshToken,
+        refresh_token: refreshToken,
         client_id: import.meta.env.VITE_SPOTIFY_CLIENT_ID,
       }),
     });
@@ -50,14 +58,17 @@ class SpotifyService {
     // Yeni token'ları güncelle
     if (tokens.refresh_token) {
       this.currentRefreshToken = tokens.refresh_token;
+    } else {
+      // Eğer yeni refresh token gelmezse, mevcut olanı koru
+      this.currentRefreshToken = refreshToken;
     }
 
     // Store'u güncelle
     const { useAuthStore } = await import('../stores/authStore');
-    useAuthStore.getState().setTokens(tokens.access_token, tokens.refresh_token || this.currentRefreshToken);
+    useAuthStore.getState().setTokens(tokens.access_token, this.currentRefreshToken || undefined);
 
     // API'yi yeni token ile yeniden initialize et
-    this.initialize(tokens.access_token, tokens.refresh_token || this.currentRefreshToken);
+    this.initialize(tokens.access_token, this.currentRefreshToken || undefined);
 
     console.log('✅ Access token refreshed successfully');
     return tokens;
@@ -67,19 +78,32 @@ class SpotifyService {
     try {
       return await requestFn();
     } catch (error: any) {
-      // 401 Unauthorized hatası kontrolü
-      if (error?.status === 401 || error?.message?.includes('401') || error?.message?.includes('Unauthorized')) {
-        console.log('🔄 Access token expired, refreshing...');
+      console.log('🔍 Error details:', error);
+
+      // Spotify API hatalarını kontrol et
+      const isUnauthorized =
+        error?.status === 401 ||
+        error?.response?.status === 401 ||
+        error?.message?.includes('401') ||
+        error?.message?.includes('Unauthorized') ||
+        error?.message?.includes('Bad or expired token') ||
+        error?.message?.includes('The access token expired');
+
+      if (isUnauthorized) {
+        console.log('🔄 Access token expired, attempting refresh...');
 
         try {
           await this.refreshAccessToken();
+          console.log('✅ Token refreshed, retrying request...');
           // Token yenilendikten sonra isteği tekrar dene
           return await requestFn();
-        } catch (refreshError) {
+        } catch (refreshError: any) {
           console.error('❌ Token refresh failed:', refreshError);
+
           // Refresh token da geçersizse logout yap
           const { useAuthStore } = await import('../stores/authStore');
           useAuthStore.getState().logout();
+
           throw new Error('Oturum süresi doldu. Lütfen yeniden giriş yapın.');
         }
       }
