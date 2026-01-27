@@ -100,20 +100,32 @@ ${profileContext}
 
 KURALLAR:
 1. Kullanıcının müzik zevkini ve geçmişini dikkate al
-2. Sadece şarkı adı ve sanatçı adı ver
+2. SADECE gerçek, var olan şarkıları öner - ASLA uydurma!
 3. Her satırda bir şarkı olsun
 4. Format: "Şarkı Adı - Sanatçı Adı"
 5. Tam olarak ${count} şarkı öner
-6. Kullanıcının dinlediği sanatçılara benzer sanatçılar öner
-7. Kullanıcının favori türlerinden şarkılar seç
-8. Popüler ve tanınmış şarkıları tercih et
-9. Kullanıcının enerji tercihini göz önünde bulundur
+6. Türkçe şarkılar için sadece tanınmış, popüler sanatçıları kullan
+7. Şarkı adlarını tam olarak doğru yaz
+8. Belirsiz olduğun şarkıları önerme
+9. Kullanıcının dinlediği sanatçılara benzer sanatçılar öner
+10. Kullanıcının favori türlerinden şarkılar seç
+
+TÜRKÇE ŞARKI ÖNERİLERİ İÇİN:
+- Sezen Aksu, Tarkan, Sertab Erener, Kenan Doğulu, Ajda Pekkan gibi klasik sanatçılar
+- Mor ve Ötesi, Duman, Teoman, Şebnem Ferah gibi rock sanatçıları
+- Hadise, Demet Akalın, Gülşen gibi pop sanatçıları
+- Manga, Model, Athena gibi alternatif gruplar
+
+İNGİLİZCE ŞARKI ÖNERİLERİ İÇİN:
+- Billboard Hot 100'de yer almış şarkılar
+- Grammy ödüllü sanatçılar
+- Spotify'da popüler şarkılar
 
 Kullanıcı isteği: ${prompt}
 ${mood ? `İstenen ruh hali: ${mood}` : ''}
 ${energy ? `İstenen enerji seviyesi: ${energy}` : ''}
 
-Kullanıcının müzik zevkine uygun ${count} adet kişiselleştirilmiş şarkı önerisi listele:`;
+SADECE gerçek şarkıları öner. Kullanıcının müzik zevkine uygun ${count} adet kişiselleştirilmiş şarkı önerisi listele:`;
 
     try {
       const result = await model.generateContent(systemPrompt);

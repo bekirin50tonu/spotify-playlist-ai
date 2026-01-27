@@ -354,33 +354,75 @@ class SpotifyService {
             continue;
           }
 
-          // Spotify'da ara
-          const searchQuery = `track:"${songName}" artist:"${artistName}"`;
-          console.log('🔍 Searching:', searchQuery);
+          // Çoklu arama stratejisi - en iyi eşleşmeyi bul
+          let searchResults = null;
 
-          const searchResults = await this.makeAuthenticatedRequest(async () => {
-            return await this.api!.search(searchQuery, ['track'], 'TR', 1);
+          // 1. Tam eşleşme arama
+          const exactQuery = `track:"${songName}" artist:"${artistName}"`;
+          console.log('🔍 Exact search:', exactQuery);
+
+          searchResults = await this.makeAuthenticatedRequest(async () => {
+            return await this.api!.search(exactQuery, ['track'], 'TR', 5);
           });
 
-          if (searchResults.tracks.items.length > 0) {
-            const track = searchResults.tracks.items[0];
-            console.log('✅ Found:', track.name, 'by', track.artists[0].name);
+          // 2. Eğer tam eşleşme bulunamazsa, daha esnek arama
+          if (searchResults.tracks.items.length === 0) {
+            const flexibleQuery = `${songName} ${artistName}`;
+            console.log('🔍 Flexible search:', flexibleQuery);
 
+            searchResults = await this.makeAuthenticatedRequest(async () => {
+              return await this.api!.search(flexibleQuery, ['track'], 'TR', 10);
+            });
+          }
+
+          // 3. En iyi eşleşmeyi bul
+          let bestMatch = null;
+          if (searchResults.tracks.items.length > 0) {
+            // Şarkı adı ve sanatçı adı benzerliğine göre sırala
+            const scoredTracks = searchResults.tracks.items.map(track => {
+              const trackNameSimilarity = this.calculateSimilarity(
+                songName.toLowerCase(),
+                track.name.toLowerCase()
+              );
+              const artistNameSimilarity = this.calculateSimilarity(
+                artistName.toLowerCase(),
+                track.artists[0].name.toLowerCase()
+              );
+
+              return {
+                track,
+                score: (trackNameSimilarity + artistNameSimilarity) / 2
+              };
+            });
+
+            // En yüksek skora sahip şarkıyı seç (minimum %60 benzerlik)
+            const bestScoredTrack = scoredTracks
+              .filter(item => item.score > 0.6)
+              .sort((a, b) => b.score - a.score)[0];
+
+            if (bestScoredTrack) {
+              bestMatch = bestScoredTrack.track;
+              console.log(`✅ Found with ${Math.round(bestScoredTrack.score * 100)}% similarity:`,
+                bestMatch.name, 'by', bestMatch.artists[0].name);
+            }
+          }
+
+          if (bestMatch) {
             tracks.push({
-              id: track.id,
-              name: track.name,
-              artists: track.artists.map(artist => ({
+              id: bestMatch.id,
+              name: bestMatch.name,
+              artists: bestMatch.artists.map(artist => ({
                 id: artist.id,
                 name: artist.name,
               })),
               album: {
-                id: track.album.id,
-                name: track.album.name,
-                images: track.album.images,
+                id: bestMatch.album.id,
+                name: bestMatch.album.name,
+                images: bestMatch.album.images,
               },
-              duration_ms: track.duration_ms,
-              preview_url: track.preview_url,
-              external_urls: track.external_urls,
+              duration_ms: bestMatch.duration_ms,
+              preview_url: bestMatch.preview_url,
+              external_urls: bestMatch.external_urls,
             });
           } else {
             console.warn('❌ Not found on Spotify:', suggestion);
@@ -422,6 +464,42 @@ class SpotifyService {
 
       return createdPlaylist.id;
     });
+  }
+
+  // String benzerlik hesaplama (Levenshtein distance)
+  private calculateSimilarity(str1: string, str2: string): number {
+    const matrix = [];
+    const len1 = str1.length;
+    const len2 = str2.length;
+
+    if (len1 === 0) return len2 === 0 ? 1 : 0;
+    if (len2 === 0) return 0;
+
+    // Initialize matrix
+    for (let i = 0; i <= len2; i++) {
+      matrix[i] = [i];
+    }
+    for (let j = 0; j <= len1; j++) {
+      matrix[0][j] = j;
+    }
+
+    // Fill matrix
+    for (let i = 1; i <= len2; i++) {
+      for (let j = 1; j <= len1; j++) {
+        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1, // substitution
+            matrix[i][j - 1] + 1,     // insertion
+            matrix[i - 1][j] + 1      // deletion
+          );
+        }
+      }
+    }
+
+    const maxLen = Math.max(len1, len2);
+    return (maxLen - matrix[len2][len1]) / maxLen;
   }
 }
 

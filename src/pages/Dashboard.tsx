@@ -214,12 +214,12 @@ const Dashboard: React.FC = () => {
               </button>
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
+              <div className="col-span-1 sm:col-span-2">
                 <p className="text-gray-400 mb-2">En Sevdiğin Türler:</p>
                 <div className="flex flex-wrap gap-1">
                   {musicProfile.musicAnalysis.favoriteGenres
-                    .slice(0, 3)
+                    .slice(0, 4)
                     .map((genre: string, index: number) => (
                       <span
                         key={index}
@@ -245,7 +245,7 @@ const Dashboard: React.FC = () => {
                 </p>
               </div>
 
-              <div>
+              <div className="col-span-1 sm:col-span-2">
                 <p className="text-gray-400 mb-2">
                   En Çok Dinlediğin Sanatçılar:
                 </p>

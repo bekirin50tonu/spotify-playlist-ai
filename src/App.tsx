@@ -18,7 +18,7 @@ import ErrorMessage from './components/ErrorMessage'
 import LoadingSpinner from './components/LoadingSpinner'
 
 function App() {
-  const { isAuthenticated, accessToken, user } = useAuthStore()
+  const { isAuthenticated, accessToken } = useAuthStore()
   const { isGenerating } = usePlaylistStore()
 
   useEffect(() => {
@@ -28,22 +28,23 @@ function App() {
       const { refreshToken } = useAuthStore.getState()
       spotifyService.initialize(accessToken, refreshToken || undefined)
 
-      // If we don't have user data, fetch it
-      if (!user) {
-        spotifyService
-          .getCurrentUser()
-          .then((userData) => {
-            console.log('✅ User data fetched:', userData.display_name)
-            useAuthStore.getState().setUser(userData)
-          })
-          .catch((error) => {
-            console.error('❌ Failed to get user data:', error)
-            // Token might be expired, logout
-            useAuthStore.getState().logout()
-          })
-      }
+      // Always try to fetch user profile to validate token
+      spotifyService
+        .getCurrentUser()
+        .then((userData) => {
+          console.log('✅ User data fetched:', userData.display_name)
+          useAuthStore.getState().setUser(userData)
+        })
+        .catch((error) => {
+          console.error(
+            '❌ Failed to get user data, token might be expired:',
+            error,
+          )
+          // Token is invalid, logout user
+          useAuthStore.getState().logout()
+        })
     }
-  }, [accessToken, user])
+  }, [accessToken]) // Remove user dependency to always check token
 
   return (
     <Router basename="/spotify-playlist-ai">
